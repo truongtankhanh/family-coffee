@@ -6,3 +6,4 @@ export * from './category';
 export * from './payment';
 export * from './payment-history';
 export * from './product-category';
+export * from './admin-account';

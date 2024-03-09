@@ -13,15 +13,16 @@ import {AppDataSource, databaseOptions} from '@family-coffee/config';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  const globalPrefix = process.env.GLOBAL_PREFIX;
+  app.setGlobalPrefix(globalPrefix);
+
   const options = new DocumentBuilder()
     .setTitle('API for cafe management')
     .setVersion('1.0')
+    .setBasePath(globalPrefix)
     .build();
   const document = SwaggerModule.createDocument(app, options);
   SwaggerModule.setup('manager/api-docs', app, document);
-
-  const globalPrefix = 'api';
-  app.setGlobalPrefix(globalPrefix);
 
   // START: connect database
   // AppDataSource.setOptions(databaseOptions(process.env));

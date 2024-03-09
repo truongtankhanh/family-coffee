@@ -1,8 +1,12 @@
-import {Column, Entity, PrimaryGeneratedColumn} from 'typeorm';
+import { Column, Entity } from 'typeorm';
 
-@Entity('user_accounts', {schema: 'family_coffee_db'})
-export class UserAccount {
-  @PrimaryGeneratedColumn({type: 'int'})
+@Entity('admin-account', { schema: 'family_coffee_db' })
+export class AdminAccount {
+  @Column('int', {
+    primary: true,
+    name: 'id',
+    comment: 'Khoá chính từ bảng AdminAccount',
+  })
   id: number | undefined;
 
   @Column('varchar', {

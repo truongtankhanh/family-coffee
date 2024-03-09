@@ -6,7 +6,7 @@ export class Customer {
   @Column('int', {
     primary: true,
     name: 'id',
-    comment: 'Khoá chính từ bảng UserAccount',
+    comment: 'Khoá chính từ bảng Customer',
   })
   id: number | undefined;
 
