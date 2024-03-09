@@ -1,0 +1,24 @@
+{
+  "name": "maketing-apis",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/maketing-apis/src",
+  "projectType": "application",
+  "targets": {
+    "serve": {
+      "executor": "@nx/js:node",
+      "defaultConfiguration": "development",
+      "options": {
+        "buildTarget": "maketing-apis:build"
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "maketing-apis:build:development"
+        },
+        "production": {
+          "buildTarget": "maketing-apis:build:production"
+        }
+      }
+    }
+  },
+  "tags": []
+}
