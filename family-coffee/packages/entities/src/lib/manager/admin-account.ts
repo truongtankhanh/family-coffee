@@ -31,7 +31,7 @@ export class AdminAccount {
   })
   fullName: string | undefined;
 
-  @Column('text', {name: 'address', comment: 'Địa chỉ của người dùng'})
+  @Column('text', { name: 'address', comment: 'Địa chỉ của người dùng' })
   address: string | undefined;
 
   @Column('varchar', {
@@ -40,6 +40,14 @@ export class AdminAccount {
     comment: 'Số điện thoại của người dùng',
   })
   phoneNumber: string | undefined;
+
+  @Column('varchar', {
+    name: 'jwt_token',
+    length: 255,
+    nullable: true,
+    comment: 'Lưu trữ token JWT cho mỗi người dùng',
+  })
+  jwtToken: string;
 
   @Column('datetime', {
     name: 'created_at',
