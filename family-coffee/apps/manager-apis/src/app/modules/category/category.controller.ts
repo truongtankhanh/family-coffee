@@ -24,7 +24,7 @@ export class CategoryController {
 
   @Get()
   @ApiOperation({ summary: 'Get all categories' })
-  @ApiResponse({ status: 200, description: 'Returns all items' })
+  @ApiResponse({ status: 200, description: 'Returns all category' })
   async getAllCategories(): Promise<Category[]> {
     return this.categoryService.getAllCategories();
   }
@@ -56,7 +56,7 @@ export class CategoryController {
   @Get(':id')
   @ApiOperation({ summary: 'Get an category by ID' })
   @ApiResponse({ status: 200, description: 'Returns an category by ID' })
-  async getCategoryById(@Param('id') id: number): Promise<Category> {
+  async getCategoryById(@Param('id') id: string): Promise<Category> {
     return this.categoryService.getCategoryById(id);
   }
 
@@ -73,7 +73,7 @@ export class CategoryController {
   @ApiOperation({ summary: 'Update an category by ID' })
   @ApiResponse({ status: 200, description: 'Updates an category by ID' })
   async updateCategoryById(
-    @Param('id') id: number,
+    @Param('id') id: string,
     @Body() updateItemDto: UpdateCategoryDto
   ): Promise<Category> {
     return this.categoryService.updateCategory(id, updateItemDto);
@@ -82,7 +82,7 @@ export class CategoryController {
   @Delete(':id')
   @ApiOperation({ summary: 'Delete an category by ID' })
   @ApiResponse({ status: 200, description: 'Deletes an category by ID' })
-  async deleteCategoryById(@Param('id') id: number): Promise<void> {
+  async deleteCategoryById(@Param('id') id: string): Promise<void> {
     return this.categoryService.deleteCategory(id);
   }
 }

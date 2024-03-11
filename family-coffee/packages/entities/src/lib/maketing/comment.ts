@@ -1,10 +1,14 @@
-import {Column, Entity, ManyToOne, PrimaryGeneratedColumn} from 'typeorm';
-import {BlogPost} from './blog-post';
+import { v4 as uuidv4 } from 'uuid';
+import { Column, Entity, ManyToOne } from 'typeorm';
+import { BlogPost } from './blog-post';
+import { BaseEntity } from '../base-entity';
 
-@Entity('comments', {schema: 'family_coffee_db'})
-export class Comment {
-  @PrimaryGeneratedColumn({type: 'int'})
-  id: number | undefined;
+@Entity('comments', { schema: 'family_coffee_db' })
+export class Comment extends BaseEntity {
+  constructor() {
+    super();
+    this.id = uuidv4();
+  }
 
   @Column('nvarchar', {
     name: 'commenter_name',
@@ -13,7 +17,7 @@ export class Comment {
   })
   commenterName: string | undefined;
 
-  @Column('text', {name: 'comment_content', comment: 'Nội dung bình luận'})
+  @Column('text', { name: 'comment_content', comment: 'Nội dung bình luận' })
   commentContent: string | undefined;
 
   @Column('datetime', {
@@ -23,18 +27,6 @@ export class Comment {
   })
   commentedAt: Date | undefined;
 
-  @ManyToOne(() => BlogPost, blog => blog.comments)
+  @ManyToOne(() => BlogPost, (blog) => blog.comments)
   blogPost: BlogPost | undefined;
-
-  @Column('datetime', {
-    name: 'created_at',
-    default: () => 'CURRENT_TIMESTAMP',
-  })
-  createdAt: Date | undefined;
-
-  @Column('datetime', {
-    name: 'updated_at',
-    default: () => 'CURRENT_TIMESTAMP',
-  })
-  updatedAt: Date | undefined;
 }

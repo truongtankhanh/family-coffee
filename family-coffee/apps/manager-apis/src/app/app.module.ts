@@ -2,7 +2,7 @@ import { JwtModule, JwtService } from '@nestjs/jwt';
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 
-import { AuthModule, CategoryModule } from './modules';
+import { AuthModule, CategoryModule, ProductModule } from './modules';
 import { AppService } from './app.service';
 import { AppController } from './app.controller';
 import { HttpExceptionFilter } from './filters';
@@ -17,6 +17,7 @@ import { AuthMiddleware, LoggingMiddleware } from './middleware';
       secret: process.env.JWT_SECRET,
       signOptions: { expiresIn: '3h' },
     }),
+    ProductModule,
   ],
   controllers: [AppController],
   providers: [

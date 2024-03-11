@@ -1,13 +1,13 @@
+import { v4 as uuidv4 } from 'uuid';
 import { Column, Entity } from 'typeorm';
+import { BaseEntity } from '../base-entity';
 
 @Entity('admin-account', { schema: 'family_coffee_db' })
-export class AdminAccount {
-  @Column('int', {
-    primary: true,
-    name: 'id',
-    comment: 'Khoá chính từ bảng AdminAccount',
-  })
-  id: number | undefined;
+export class AdminAccount extends BaseEntity {
+  constructor() {
+    super();
+    this.id = uuidv4();
+  }
 
   @Column('varchar', {
     name: 'email',
@@ -48,16 +48,4 @@ export class AdminAccount {
     comment: 'Lưu trữ token JWT cho mỗi người dùng',
   })
   jwtToken: string;
-
-  @Column('datetime', {
-    name: 'created_at',
-    default: () => 'CURRENT_TIMESTAMP',
-  })
-  createdAt: Date | undefined;
-
-  @Column('datetime', {
-    name: 'updated_at',
-    default: () => 'CURRENT_TIMESTAMP',
-  })
-  updatedAt: Date | undefined;
 }

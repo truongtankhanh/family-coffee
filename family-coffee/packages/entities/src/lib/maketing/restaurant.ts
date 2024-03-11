@@ -1,14 +1,18 @@
-import {Column, Entity, PrimaryGeneratedColumn} from 'typeorm';
+import { v4 as uuidv4 } from 'uuid';
+import { Column, Entity } from 'typeorm';
+import { BaseEntity } from '../base-entity';
 
-@Entity('restaurant', {schema: 'family_coffee_db'})
-export class Restaurant {
-  @PrimaryGeneratedColumn({type: 'int'})
-  id: number | undefined;
+@Entity('restaurant', { schema: 'family_coffee_db' })
+export class Restaurant extends BaseEntity {
+  constructor() {
+    super();
+    this.id = uuidv4();
+  }
 
-  @Column('text', {name: 'description', comment: 'Mô tả về quán'})
+  @Column('text', { name: 'description', comment: 'Mô tả về quán' })
   description: string | undefined;
 
-  @Column('text', {name: 'address', comment: 'Địa chỉ quán'})
+  @Column('text', { name: 'address', comment: 'Địa chỉ quán' })
   address: string | undefined;
 
   @Column('varchar', {
@@ -31,16 +35,4 @@ export class Restaurant {
     comment: 'Giờ mở cửa và đóng cửa của quán',
   })
   workingHours: string | undefined;
-
-  @Column('datetime', {
-    name: 'created_at',
-    default: () => 'CURRENT_TIMESTAMP',
-  })
-  createdAt: Date | undefined;
-
-  @Column('datetime', {
-    name: 'updated_at',
-    default: () => 'CURRENT_TIMESTAMP',
-  })
-  updatedAt: Date | undefined;
 }

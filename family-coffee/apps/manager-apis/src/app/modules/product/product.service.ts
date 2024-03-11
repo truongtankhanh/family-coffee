@@ -1,23 +1,23 @@
 import { FindOptionsOrderValue } from 'typeorm';
-import { Category } from '@family-coffee/entities';
+import { Product } from '@family-coffee/entities';
 import { AppDataSource } from '@family-coffee/config';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PaginationDto } from './dto/pagination.dto';
-import { CreateCategoryDto } from './dto/create-category.dto';
-import { UpdateCategoryDto } from './dto/update-category.dto';
+import { CreateProductDto } from './dto/create-product.dto';
+import { UpdateProductDto } from './dto/update-product.dto';
 
-export interface CategoriesWithPageResponse {
+export interface ProductsWithPageResponse {
   nextPage: number;
-  data: Category[];
+  data: Product[];
 }
 
 @Injectable()
-export class CategoryService {
-  private readonly categoryRepo = AppDataSource.getRepository(Category);
+export class ProductService {
+  private readonly productRepo = AppDataSource.getRepository(Product);
 
-  async getAllCategories(): Promise<Category[]> {
+  async getAllProducts(): Promise<Product[]> {
     try {
-      return await this.categoryRepo.find({ withDeleted: false });
+      return await this.productRepo.find({ withDeleted: false });
     } catch (error) {
       throw new HttpException(
         (error as Error).message,
@@ -26,14 +26,14 @@ export class CategoryService {
     }
   }
 
-  async getCategoriesWithPage(
+  async getProductsWithPage(
     paginationDto: PaginationDto
-  ): Promise<CategoriesWithPageResponse> {
+  ): Promise<ProductsWithPageResponse> {
     const { page, limit } = paginationDto;
     const skippedItems = (page - 1) * limit;
 
     try {
-      const data = await this.categoryRepo.find({
+      const data = await this.productRepo.find({
         skip: skippedItems,
         take: limit,
         withDeleted: false,
@@ -51,9 +51,9 @@ export class CategoryService {
     }
   }
 
-  async sortCategoriesWithName(option: FindOptionsOrderValue) {
+  async sortProductsWithName(option: FindOptionsOrderValue) {
     try {
-      return await this.categoryRepo.find({
+      return await this.productRepo.find({
         order: {
           name: option,
         },
@@ -67,9 +67,9 @@ export class CategoryService {
     }
   }
 
-  async getCategoryById(id: string): Promise<Category> {
+  async getProductById(id: string): Promise<Product> {
     try {
-      return await this.categoryRepo.findOneOrFail({ where: { id } });
+      return await this.productRepo.findOneOrFail({ where: { id } });
     } catch (error) {
       throw new HttpException(
         (error as Error).message,
@@ -78,19 +78,18 @@ export class CategoryService {
     }
   }
 
-  async createCategory(
-    createCategoryDto: CreateCategoryDto
-  ): Promise<Category> {
+  async createProduct(createProductDto: CreateProductDto): Promise<Product> {
     try {
       return await AppDataSource.transaction(async (t) => {
-        const repository = t.getRepository(Category);
+        const repository = t.getRepository(Product);
 
-        const cate = new Category();
-        cate.name = createCategoryDto.name;
-        cate.parentId = createCategoryDto.parentId;
+        const product = new Product();
+        product.name = createProductDto.name;
+        product.description = createProductDto.description;
+        product.price = createProductDto.price;
 
-        const newCate = repository.create(cate);
-        return await repository.save(newCate);
+        const newProduct = repository.create(product);
+        return await repository.save(newProduct);
       });
     } catch (error) {
       throw new HttpException(
@@ -100,20 +99,20 @@ export class CategoryService {
     }
   }
 
-  async updateCategory(
+  async updateProduct(
     id: string,
-    updateCategoryDto: UpdateCategoryDto
-  ): Promise<Category> {
+    updateProductDto: UpdateProductDto
+  ): Promise<Product> {
     try {
       return await AppDataSource.transaction(async (t) => {
-        const repository = t.getRepository(Category);
+        const repository = t.getRepository(Product);
 
-        const category = await this.getCategoryById(id);
-        if (!category) {
-          throw new HttpException('Category not found', HttpStatus.NOT_FOUND);
+        const product = await this.getProductById(id);
+        if (!product) {
+          throw new HttpException('Product not found', HttpStatus.NOT_FOUND);
         }
 
-        const updatedItem = Object.assign(category, updateCategoryDto);
+        const updatedItem = Object.assign(product, updateProductDto);
         return await repository.save(updatedItem);
       });
     } catch (error) {
@@ -124,17 +123,17 @@ export class CategoryService {
     }
   }
 
-  async deleteCategory(id: string): Promise<void> {
+  async deleteProduct(id: string): Promise<void> {
     try {
       await AppDataSource.transaction(async (t) => {
-        const repository = t.getRepository(Category);
+        const repository = t.getRepository(Product);
 
-        const category = await this.getCategoryById(id);
-        if (!category) {
-          throw new HttpException('Category not found', HttpStatus.NOT_FOUND);
+        const product = await this.getProductById(id);
+        if (!product) {
+          throw new HttpException('Product not found', HttpStatus.NOT_FOUND);
         }
 
-        await repository.remove(category);
+        await repository.remove(product);
       });
     } catch (error) {
       throw new HttpException(

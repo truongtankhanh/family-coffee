@@ -1,25 +1,23 @@
-import {
-  Column,
-  Entity,
-  ManyToOne,
-  OneToMany,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
 import {
   ORDER_STATUS,
   PAYMENT_STATUS,
   TypeOrderStatus,
   TypePaymentStatus,
 } from '@family-coffee/enums';
-import {Customer} from './customer';
-import {OrderDetail} from './order-detail';
+import { v4 as uuidv4 } from 'uuid';
+import { Customer } from './customer';
+import { OrderDetail } from './order-detail';
+import { BaseEntity } from '../base-entity';
 
-@Entity('orders', {schema: 'family_coffee_db'})
-export class Order {
-  @PrimaryGeneratedColumn({type: 'int'})
-  id: number | undefined;
+@Entity('orders', { schema: 'family_coffee_db' })
+export class Order extends BaseEntity {
+  constructor() {
+    super();
+    this.id = uuidv4();
+  }
 
-  @Column('datetime', {name: 'order_date', comment: 'Ngày đặt hàng'})
+  @Column('datetime', { name: 'order_date', comment: 'Ngày đặt hàng' })
   orderDate: Date | undefined;
 
   @Column('enum', {
@@ -42,21 +40,9 @@ export class Order {
   })
   totalAmount: number | undefined;
 
-  @OneToMany(() => OrderDetail, orderDetail => orderDetail.order)
+  @OneToMany(() => OrderDetail, (orderDetail) => orderDetail.order)
   orderDetails: Promise<OrderDetail[]> | undefined;
 
-  @ManyToOne(() => Customer, user => user.orders)
+  @ManyToOne(() => Customer, (user) => user.orders)
   customer: Customer | undefined;
-
-  @Column('datetime', {
-    name: 'created_at',
-    default: () => 'CURRENT_TIMESTAMP',
-  })
-  createdAt: Date | undefined;
-
-  @Column('datetime', {
-    name: 'updated_at',
-    default: () => 'CURRENT_TIMESTAMP',
-  })
-  updatedAt: Date | undefined;
 }

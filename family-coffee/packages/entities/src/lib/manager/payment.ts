@@ -1,22 +1,20 @@
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  OneToOne,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
 import {
   PAYMENT_METHOD,
   PAYMENT_STATUS,
   TypePamentMethod,
   TypePaymentStatus,
 } from '@family-coffee/enums';
-import {Order} from './order';
+import { v4 as uuidv4 } from 'uuid';
+import { Order } from './order';
+import { BaseEntity } from '../base-entity';
 
-@Entity('payments', {schema: 'family_coffee_db'})
-export class Payment {
-  @PrimaryGeneratedColumn({type: 'int'})
-  id: number | undefined;
+@Entity('payments', { schema: 'family_coffee_db' })
+export class Payment extends BaseEntity {
+  constructor() {
+    super();
+    this.id = uuidv4();
+  }
 
   @Column('int', {
     name: 'order_id',
@@ -32,7 +30,7 @@ export class Payment {
   })
   paymentMethod: TypePamentMethod | undefined;
 
-  @Column('float', {name: 'amount', comment: 'Số tiền thanh toán'})
+  @Column('float', { name: 'amount', comment: 'Số tiền thanh toán' })
   amount: number | undefined;
 
   @Column('datetime', {
@@ -50,18 +48,6 @@ export class Payment {
   status: TypePaymentStatus | undefined;
 
   @OneToOne(() => Order)
-  @JoinColumn([{name: 'order_id', referencedColumnName: 'id'}])
+  @JoinColumn([{ name: 'order_id', referencedColumnName: 'id' }])
   order: Order | undefined;
-
-  @Column('datetime', {
-    name: 'created_at',
-    default: () => 'CURRENT_TIMESTAMP',
-  })
-  createdAt: Date | undefined;
-
-  @Column('datetime', {
-    name: 'updated_at',
-    default: () => 'CURRENT_TIMESTAMP',
-  })
-  updatedAt: Date | undefined;
 }

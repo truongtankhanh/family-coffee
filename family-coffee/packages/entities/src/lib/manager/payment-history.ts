@@ -1,16 +1,14 @@
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  OneToOne,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
-import {Payment} from './payment';
+import { v4 as uuidv4 } from 'uuid';
+import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
+import { Payment } from './payment';
+import { BaseEntity } from '../base-entity';
 
-@Entity('payment_history', {schema: 'family_coffee_db'})
-export class PaymentHistory {
-  @PrimaryGeneratedColumn({type: 'int'})
-  id: number | undefined;
+@Entity('payment_history', { schema: 'family_coffee_db' })
+export class PaymentHistory extends BaseEntity {
+  constructor() {
+    super();
+    this.id = uuidv4();
+  }
 
   @Column('int', {
     name: 'payment_id',
@@ -25,18 +23,6 @@ export class PaymentHistory {
   description: string | undefined;
 
   @OneToOne(() => Payment)
-  @JoinColumn([{name: 'payment_id', referencedColumnName: 'id'}])
+  @JoinColumn([{ name: 'payment_id', referencedColumnName: 'id' }])
   payment: Payment | undefined;
-
-  @Column('datetime', {
-    name: 'created_at',
-    default: () => 'CURRENT_TIMESTAMP',
-  })
-  createdAt: Date | undefined;
-
-  @Column('datetime', {
-    name: 'updated_at',
-    default: () => 'CURRENT_TIMESTAMP',
-  })
-  updatedAt: Date | undefined;
 }

@@ -1,15 +1,19 @@
-import {Column, Entity, OneToMany, PrimaryGeneratedColumn} from 'typeorm';
-import {Comment} from './comment';
+import { v4 as uuidv4 } from 'uuid';
+import { Column, Entity, OneToMany } from 'typeorm';
+import { Comment } from './comment';
+import { BaseEntity } from '../base-entity';
 
-@Entity('blog_posts', {schema: 'family_coffee_db'})
-export class BlogPost {
-  @PrimaryGeneratedColumn({type: 'int'})
-  id: number | undefined;
+@Entity('blog_posts', { schema: 'family_coffee_db' })
+export class BlogPost extends BaseEntity {
+  constructor() {
+    super();
+    this.id = uuidv4();
+  }
 
-  @Column('text', {name: 'title', comment: 'Tiêu đề bài viết'})
+  @Column('text', { name: 'title', comment: 'Tiêu đề bài viết' })
   title: string | undefined;
 
-  @Column('text', {name: 'content', comment: 'Nội dung bài viết'})
+  @Column('text', { name: 'content', comment: 'Nội dung bài viết' })
   content: string | undefined;
 
   @Column('nvarchar', {
@@ -19,7 +23,7 @@ export class BlogPost {
   })
   author: string | undefined;
 
-  @Column('text', {name: 'category', comment: 'Danh mục của bài viết'})
+  @Column('text', { name: 'category', comment: 'Danh mục của bài viết' })
   category: string | undefined;
 
   @Column('datetime', {
@@ -28,18 +32,6 @@ export class BlogPost {
   })
   publishedAt: Date | undefined;
 
-  @OneToMany(() => Comment, comment => comment.blogPost)
+  @OneToMany(() => Comment, (comment) => comment.blogPost)
   comments: Promise<Comment[]> | undefined;
-
-  @Column('datetime', {
-    name: 'created_at',
-    default: () => 'CURRENT_TIMESTAMP',
-  })
-  createdAt: Date | undefined;
-
-  @Column('datetime', {
-    name: 'updated_at',
-    default: () => 'CURRENT_TIMESTAMP',
-  })
-  updatedAt: Date | undefined;
 }

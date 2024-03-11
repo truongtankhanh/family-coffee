@@ -1,9 +1,13 @@
-import {Column, Entity, PrimaryGeneratedColumn} from 'typeorm';
+import { v4 as uuidv4 } from 'uuid';
+import { Column, Entity } from 'typeorm';
+import { BaseEntity } from '../base-entity';
 
-@Entity('user_accounts', {schema: 'family_coffee_db'})
-export class UserAccount {
-  @PrimaryGeneratedColumn({type: 'int'})
-  id: number | undefined;
+@Entity('user_accounts', { schema: 'family_coffee_db' })
+export class UserAccount extends BaseEntity {
+  constructor() {
+    super();
+    this.id = uuidv4();
+  }
 
   @Column('varchar', {
     name: 'email',
@@ -27,7 +31,7 @@ export class UserAccount {
   })
   fullName: string | undefined;
 
-  @Column('text', {name: 'address', comment: 'Địa chỉ của người dùng'})
+  @Column('text', { name: 'address', comment: 'Địa chỉ của người dùng' })
   address: string | undefined;
 
   @Column('varchar', {
@@ -36,16 +40,4 @@ export class UserAccount {
     comment: 'Số điện thoại của người dùng',
   })
   phoneNumber: string | undefined;
-
-  @Column('datetime', {
-    name: 'created_at',
-    default: () => 'CURRENT_TIMESTAMP',
-  })
-  createdAt: Date | undefined;
-
-  @Column('datetime', {
-    name: 'updated_at',
-    default: () => 'CURRENT_TIMESTAMP',
-  })
-  updatedAt: Date | undefined;
 }
