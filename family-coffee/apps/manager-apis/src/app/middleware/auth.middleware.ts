@@ -25,6 +25,7 @@ export class AuthMiddleware implements NestMiddleware {
           .json({
             status: HttpStatus.UNAUTHORIZED,
             time: new Date().toLocaleString(),
+            path: req.originalUrl,
             message: 'Unauthorized',
           });
       }
@@ -35,6 +36,7 @@ export class AuthMiddleware implements NestMiddleware {
       .json({
         status: HttpStatus.UNAUTHORIZED,
         time: new Date().toLocaleString(),
+        path: req.originalUrl,
         message: 'Unauthorized',
       });
   }

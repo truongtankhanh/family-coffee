@@ -1,5 +1,5 @@
 import { FindOptionsOrderValue } from 'typeorm';
-import { Category } from '@family-coffee/entities';
+import { Category, Product } from '@family-coffee/entities';
 import { AppDataSource } from '@family-coffee/config';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PaginationDto } from './dto/pagination.dto';
@@ -136,6 +136,24 @@ export class CategoryService {
 
         await repository.remove(category);
       });
+    } catch (error) {
+      throw new HttpException(
+        (error as Error).message,
+        HttpStatus.TOO_MANY_REQUESTS
+      );
+    }
+  }
+
+  async getProductByCategoryId(categoryId: string): Promise<Product[]> {
+    try {
+      const category = await this.categoryRepo.findOne({
+        where: { id: categoryId },
+      });
+      if (!category) {
+        throw new HttpException('Category not found', HttpStatus.NOT_FOUND);
+      }
+
+      return await category.products;
     } catch (error) {
       throw new HttpException(
         (error as Error).message,

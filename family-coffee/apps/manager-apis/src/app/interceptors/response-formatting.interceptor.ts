@@ -14,7 +14,7 @@ export class ResponseFormattingInterceptor implements NestInterceptor {
         const formattedData = {
           status: context.switchToHttp().getResponse().statusCode,
           time: new Date().toLocaleString(),
-          data,
+          response: data,
         };
         return formattedData;
       })

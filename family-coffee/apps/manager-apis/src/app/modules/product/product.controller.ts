@@ -8,18 +8,18 @@ import {
   Put,
   Query,
 } from '@nestjs/common';
-import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { ProductService, ProductsWithPageResponse } from './product.service';
-import { Product } from '@family-coffee/entities';
-import { PaginationDto } from './dto/pagination.dto';
 import { FindOptionsOrderValue } from 'typeorm';
+import { Product } from '@family-coffee/entities';
+import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { PaginationDto } from './dto/pagination.dto';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { ProductService, ProductsWithPageResponse } from './product.service';
 
 @ApiTags('Products')
 @Controller('product')
 export class ProductController {
-  constructor(private productService: ProductService) {}
+  constructor(private readonly productService: ProductService) {}
 
   @Get()
   @ApiOperation({ summary: 'Get all products' })

@@ -8,11 +8,11 @@
       "executor": "@nx/js:node",
       "defaultConfiguration": "development",
       "options": {
-        "buildTarget": "manager-apis:build"
+        "buildTarget": "manager-apis:build --skip-nx-cache=true"
       },
       "configurations": {
         "development": {
-          "buildTarget": "manager-apis:build:development"
+          "buildTarget": "manager-apis:build:development --skip-nx-cache=true"
         },
         "production": {
           "buildTarget": "manager-apis:build:production"

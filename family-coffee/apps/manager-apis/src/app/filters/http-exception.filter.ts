@@ -23,7 +23,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
       time: new Date().toLocaleString(),
       path: request.originalUrl,
       message: exception.message || 'Internal server error',
-      data: null,
+      response: null,
     });
   }
 }

@@ -9,7 +9,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { FindOptionsOrderValue } from 'typeorm';
-import { Category } from '@family-coffee/entities';
+import { Category, Product } from '@family-coffee/entities';
 import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
 import {
   CategoriesWithPageResponse,
@@ -58,6 +58,16 @@ export class CategoryController {
   @ApiResponse({ status: 200, description: 'Returns an category by ID' })
   async getCategoryById(@Param('id') id: string): Promise<Category> {
     return this.categoryService.getCategoryById(id);
+  }
+
+  @Get(':id/products')
+  @ApiOperation({ summary: 'Get a list of products by category' })
+  @ApiResponse({
+    status: 200,
+    description: 'Returns a list of products by category',
+  })
+  async getProductByCategoryId(@Param('id') id: string): Promise<Product[]> {
+    return this.categoryService.getProductByCategoryId(id);
   }
 
   @Post()
