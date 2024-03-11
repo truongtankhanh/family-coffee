@@ -7,6 +7,7 @@ import {
   CategoryModule,
   ProductModule,
   OrderModule,
+  CustomerModule,
 } from './modules';
 import { AppService } from './app.service';
 import { AppController } from './app.controller';
@@ -24,6 +25,7 @@ import { AuthMiddleware, LoggingMiddleware } from './middleware';
     CategoryModule,
     ProductModule,
     OrderModule,
+    CustomerModule,
   ],
   controllers: [AppController],
   providers: [
