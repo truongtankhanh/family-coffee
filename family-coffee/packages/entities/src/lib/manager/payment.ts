@@ -16,12 +16,13 @@ export class Payment extends BaseEntity {
     this.id = uuidv4();
   }
 
-  @Column('int', {
+  @Column('varchar', {
     name: 'order_id',
+    length: 36,
     comment:
       'ID đơn hàng liên quan đến thanh toán (khóa ngoại kết nối đến bảng Orders)',
   })
-  orderId: number | undefined;
+  orderId: string | undefined;
 
   @Column('enum', {
     name: 'payment_method',

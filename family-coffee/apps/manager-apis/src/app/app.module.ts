@@ -8,6 +8,7 @@ import {
   ProductModule,
   OrderModule,
   CustomerModule,
+  PaymentModule
 } from './modules';
 import { AppService } from './app.service';
 import { AppController } from './app.controller';
@@ -26,6 +27,7 @@ import { AuthMiddleware, LoggingMiddleware } from './middleware';
     ProductModule,
     OrderModule,
     CustomerModule,
+    PaymentModule,
   ],
   controllers: [AppController],
   providers: [
