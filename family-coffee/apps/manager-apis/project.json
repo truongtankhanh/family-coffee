@@ -18,6 +18,10 @@
           "buildTarget": "manager-apis:build:production"
         }
       }
+    },
+    "docker-build": {
+      "dependsOn": ["build"],
+      "command": "docker build -f apps/manager-apis/Dockerfile . -t manager-apis"
     }
   },
   "tags": []

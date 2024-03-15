@@ -1,11 +1,40 @@
-import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { JwtModule, JwtService } from '@nestjs/jwt';
+import { typeormConfig } from '@family-coffee/config';
+import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 
-import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { AppController } from './app.controller';
+import { HttpExceptionFilter } from './filters';
+import { LoggingMiddleware } from './middleware';
+import { ResponseFormattingInterceptor } from './interceptors';
 
 @Module({
-  imports: [],
+  imports: [
+    JwtModule.register({
+      secret: process.env.JWT_SECRET,
+      signOptions: { expiresIn: '3h' },
+    }),
+    TypeOrmModule.forRoot(typeormConfig),
+    TypeOrmModule.forFeature([])
+  ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    JwtService,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ResponseFormattingInterceptor,
+    },
+    {
+      provide: APP_FILTER,
+      useClass: HttpExceptionFilter,
+    },
+  ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(LoggingMiddleware).forRoutes('*');
+  }
+}

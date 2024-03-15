@@ -1,6 +1,6 @@
-import { FindOptionsOrderValue } from 'typeorm';
 import { Order } from '@family-coffee/entities';
-import { AppDataSource } from '@family-coffee/config';
+import { InjectRepository } from '@nestjs/typeorm';
+import { FindOptionsOrderValue, Repository } from 'typeorm';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PaginationDto } from './dto/pagination.dto';
 import { CreateOrderDto } from './dto/create-order.dto';
@@ -13,7 +13,10 @@ export interface OrdersWithPageResponse {
 
 @Injectable()
 export class OrderService {
-  private readonly orderRepo = AppDataSource.getRepository(Order);
+  constructor(
+    @InjectRepository(Order)
+    private readonly orderRepo: Repository<Order>
+  ) {}
 
   async getAllOrders(): Promise<Order[]> {
     try {
@@ -80,18 +83,14 @@ export class OrderService {
 
   async createOrder(createOrderDto: CreateOrderDto): Promise<Order> {
     try {
-      return await AppDataSource.transaction(async (t) => {
-        const repository = t.getRepository(Order);
+      const order = new Order();
+      order.orderDate = new Date(createOrderDto.orderDate);
+      order.status = createOrderDto.status;
+      order.paymentStatus = createOrderDto.paymentStatus;
+      order.totalAmount = createOrderDto.totalAmount;
 
-        const order = new Order();
-        order.orderDate = new Date(createOrderDto.orderDate);
-        order.status = createOrderDto.status;
-        order.paymentStatus = createOrderDto.paymentStatus;
-        order.totalAmount = createOrderDto.totalAmount;
-
-        const newOrder = repository.create(order);
-        return await repository.save(newOrder);
-      });
+      const newOrder = this.orderRepo.create(order);
+      return await this.orderRepo.save(newOrder);
     } catch (error) {
       throw new HttpException(
         (error as Error).message,
@@ -105,17 +104,13 @@ export class OrderService {
     updateOrderDto: UpdateOrderDto
   ): Promise<Order> {
     try {
-      return await AppDataSource.transaction(async (t) => {
-        const repository = t.getRepository(Order);
+      const order = await this.getOrderById(id);
+      if (!order) {
+        throw new HttpException('Order not found', HttpStatus.NOT_FOUND);
+      }
 
-        const order = await this.getOrderById(id);
-        if (!order) {
-          throw new HttpException('Order not found', HttpStatus.NOT_FOUND);
-        }
-
-        const updatedItem = Object.assign(order, updateOrderDto);
-        return await repository.save(updatedItem);
-      });
+      const updatedItem = Object.assign(order, updateOrderDto);
+      return await this.orderRepo.save(updatedItem);
     } catch (error) {
       throw new HttpException(
         (error as Error).message,
@@ -126,16 +121,12 @@ export class OrderService {
 
   async deleteOrder(id: string): Promise<void> {
     try {
-      await AppDataSource.transaction(async (t) => {
-        const repository = t.getRepository(Order);
+      const order = await this.getOrderById(id);
+      if (!order) {
+        throw new HttpException('Order not found', HttpStatus.NOT_FOUND);
+      }
 
-        const order = await this.getOrderById(id);
-        if (!order) {
-          throw new HttpException('Order not found', HttpStatus.NOT_FOUND);
-        }
-
-        await repository.remove(order);
-      });
+      await this.orderRepo.remove(order);
     } catch (error) {
       throw new HttpException(
         (error as Error).message,

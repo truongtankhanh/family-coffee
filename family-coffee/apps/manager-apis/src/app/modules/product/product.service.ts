@@ -1,6 +1,6 @@
-import { FindOptionsOrderValue } from 'typeorm';
 import { Product } from '@family-coffee/entities';
-import { AppDataSource } from '@family-coffee/config';
+import { InjectRepository } from '@nestjs/typeorm';
+import { FindOptionsOrderValue, Repository } from 'typeorm';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PaginationDto } from './dto/pagination.dto';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -13,7 +13,10 @@ export interface ProductsWithPageResponse {
 
 @Injectable()
 export class ProductService {
-  private readonly productRepo = AppDataSource.getRepository(Product);
+  constructor(
+    @InjectRepository(Product)
+    private readonly productRepo: Repository<Product>
+  ) {}
 
   async getAllProducts(): Promise<Product[]> {
     try {
@@ -80,17 +83,13 @@ export class ProductService {
 
   async createProduct(createProductDto: CreateProductDto): Promise<Product> {
     try {
-      return await AppDataSource.transaction(async (t) => {
-        const repository = t.getRepository(Product);
+      const product = new Product();
+      product.name = createProductDto.name;
+      product.description = createProductDto.description;
+      product.price = createProductDto.price;
 
-        const product = new Product();
-        product.name = createProductDto.name;
-        product.description = createProductDto.description;
-        product.price = createProductDto.price;
-
-        const newProduct = repository.create(product);
-        return await repository.save(newProduct);
-      });
+      const newProduct = this.productRepo.create(product);
+      return await this.productRepo.save(newProduct);
     } catch (error) {
       throw new HttpException(
         (error as Error).message,
@@ -104,17 +103,13 @@ export class ProductService {
     updateProductDto: UpdateProductDto
   ): Promise<Product> {
     try {
-      return await AppDataSource.transaction(async (t) => {
-        const repository = t.getRepository(Product);
+      const product = await this.getProductById(id);
+      if (!product) {
+        throw new HttpException('Product not found', HttpStatus.NOT_FOUND);
+      }
 
-        const product = await this.getProductById(id);
-        if (!product) {
-          throw new HttpException('Product not found', HttpStatus.NOT_FOUND);
-        }
-
-        const updatedItem = Object.assign(product, updateProductDto);
-        return await repository.save(updatedItem);
-      });
+      const updatedItem = Object.assign(product, updateProductDto);
+      return await this.productRepo.save(updatedItem);
     } catch (error) {
       throw new HttpException(
         (error as Error).message,
@@ -125,16 +120,12 @@ export class ProductService {
 
   async deleteProduct(id: string): Promise<void> {
     try {
-      await AppDataSource.transaction(async (t) => {
-        const repository = t.getRepository(Product);
+      const product = await this.getProductById(id);
+      if (!product) {
+        throw new HttpException('Product not found', HttpStatus.NOT_FOUND);
+      }
 
-        const product = await this.getProductById(id);
-        if (!product) {
-          throw new HttpException('Product not found', HttpStatus.NOT_FOUND);
-        }
-
-        await repository.remove(product);
-      });
+      await this.productRepo.remove(product);
     } catch (error) {
       throw new HttpException(
         (error as Error).message,

@@ -1,7 +1,7 @@
-import { AppDataSource } from '@family-coffee/config';
 import { Payment } from '@family-coffee/entities';
+import { InjectRepository } from '@nestjs/typeorm';
+import { FindOptionsOrderValue, Repository } from 'typeorm';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { FindOptionsOrderValue } from 'typeorm';
 import { PaginationDto } from './dto/pagination.dto';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
@@ -13,7 +13,10 @@ export interface PaymentsWithPageResponse {
 
 @Injectable()
 export class PaymentService {
-  private readonly paymentRepo = AppDataSource.getRepository(Payment);
+  constructor(
+    @InjectRepository(Payment)
+    private readonly paymentRepo: Repository<Payment>
+  ) {}
 
   async getAllPayments(): Promise<Payment[]> {
     try {
@@ -80,19 +83,15 @@ export class PaymentService {
 
   async createPayment(createPaymentDto: CreatePaymentDto): Promise<Payment> {
     try {
-      return await AppDataSource.transaction(async (t) => {
-        const repository = t.getRepository(Payment);
+      const payment = new Payment();
+      payment.orderId = createPaymentDto.order_id;
+      payment.paymentMethod = createPaymentDto.payment_method;
+      payment.amount = createPaymentDto.amount;
+      payment.paymentDate = createPaymentDto.payment_date;
+      payment.status = createPaymentDto.status;
 
-        const payment = new Payment();
-        payment.orderId = createPaymentDto.order_id;
-        payment.paymentMethod = createPaymentDto.payment_method;
-        payment.amount = createPaymentDto.amount;
-        payment.paymentDate = createPaymentDto.payment_date;
-        payment.status = createPaymentDto.status;
-
-        const newPayment = repository.create(payment);
-        return await repository.save(newPayment);
-      });
+      const newPayment = this.paymentRepo.create(payment);
+      return await this.paymentRepo.save(newPayment);
     } catch (error) {
       throw new HttpException(
         (error as Error).message,
@@ -106,17 +105,13 @@ export class PaymentService {
     updatePaymentDto: UpdatePaymentDto
   ): Promise<Payment> {
     try {
-      return await AppDataSource.transaction(async (t) => {
-        const repository = t.getRepository(Payment);
+      const payment = await this.getPaymentById(id);
+      if (!payment) {
+        throw new HttpException('Payment not found', HttpStatus.NOT_FOUND);
+      }
 
-        const payment = await this.getPaymentById(id);
-        if (!payment) {
-          throw new HttpException('Payment not found', HttpStatus.NOT_FOUND);
-        }
-
-        const updatedItem = Object.assign(payment, updatePaymentDto);
-        return await repository.save(updatedItem);
-      });
+      const updatedItem = Object.assign(payment, updatePaymentDto);
+      return await this.paymentRepo.save(updatedItem);
     } catch (error) {
       throw new HttpException(
         (error as Error).message,
@@ -127,16 +122,12 @@ export class PaymentService {
 
   async deletePayment(id: string): Promise<void> {
     try {
-      await AppDataSource.transaction(async (t) => {
-        const repository = t.getRepository(Payment);
+      const payment = await this.getPaymentById(id);
+      if (!payment) {
+        throw new HttpException('Payment not found', HttpStatus.NOT_FOUND);
+      }
 
-        const payment = await this.getPaymentById(id);
-        if (!payment) {
-          throw new HttpException('Payment not found', HttpStatus.NOT_FOUND);
-        }
-
-        await repository.remove(payment);
-      });
+      await this.paymentRepo.remove(payment);
     } catch (error) {
       throw new HttpException(
         (error as Error).message,

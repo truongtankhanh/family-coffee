@@ -1,7 +1,7 @@
-import { AppDataSource } from '@family-coffee/config';
 import { Customer } from '@family-coffee/entities';
+import { InjectRepository } from '@nestjs/typeorm';
+import { FindOptionsOrderValue, Repository } from 'typeorm';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { FindOptionsOrderValue } from 'typeorm';
 import { PaginationDto } from './dto/pagination.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
 import { CreateCustomerDto } from './dto/create-customer.dto';
@@ -13,7 +13,10 @@ export interface CustomersWithPageResponse {
 
 @Injectable()
 export class CustomerService {
-  private readonly customerRepo = AppDataSource.getRepository(Customer);
+  constructor(
+    @InjectRepository(Customer)
+    private readonly customerRepo: Repository<Customer>
+  ) {}
 
   async getAllCustomers(): Promise<Customer[]> {
     try {
@@ -82,16 +85,12 @@ export class CustomerService {
     createCustomerDto: CreateCustomerDto
   ): Promise<Customer> {
     try {
-      return await AppDataSource.transaction(async (t) => {
-        const repository = t.getRepository(Customer);
+      const customer = new Customer();
+      customer.name = createCustomerDto.name;
+      customer.phoneNumber = createCustomerDto.phone_number;
 
-        const customer = new Customer();
-        customer.name = createCustomerDto.name;
-        customer.phoneNumber = createCustomerDto.phone_number;
-
-        const newCustomer = repository.create(customer);
-        return await repository.save(newCustomer);
-      });
+      const newCustomer = this.customerRepo.create(customer);
+      return await this.customerRepo.save(newCustomer);
     } catch (error) {
       throw new HttpException(
         (error as Error).message,
@@ -105,17 +104,13 @@ export class CustomerService {
     updateCustomerDto: UpdateCustomerDto
   ): Promise<Customer> {
     try {
-      return await AppDataSource.transaction(async (t) => {
-        const repository = t.getRepository(Customer);
+      const customer = await this.getCustomerById(id);
+      if (!customer) {
+        throw new HttpException('Customer not found', HttpStatus.NOT_FOUND);
+      }
 
-        const customer = await this.getCustomerById(id);
-        if (!customer) {
-          throw new HttpException('Customer not found', HttpStatus.NOT_FOUND);
-        }
-
-        const updatedItem = Object.assign(customer, updateCustomerDto);
-        return await repository.save(updatedItem);
-      });
+      const updatedItem = Object.assign(customer, updateCustomerDto);
+      return await this.customerRepo.save(updatedItem);
     } catch (error) {
       throw new HttpException(
         (error as Error).message,
@@ -126,16 +121,12 @@ export class CustomerService {
 
   async deleteCustomer(id: string): Promise<void> {
     try {
-      await AppDataSource.transaction(async (t) => {
-        const repository = t.getRepository(Customer);
+      const customer = await this.getCustomerById(id);
+      if (!customer) {
+        throw new HttpException('Customer not found', HttpStatus.NOT_FOUND);
+      }
 
-        const customer = await this.getCustomerById(id);
-        if (!customer) {
-          throw new HttpException('Customer not found', HttpStatus.NOT_FOUND);
-        }
-
-        await repository.remove(customer);
-      });
+      await this.customerRepo.remove(customer);
     } catch (error) {
       throw new HttpException(
         (error as Error).message,

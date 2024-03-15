@@ -8,11 +8,11 @@
       "executor": "@nx/js:node",
       "defaultConfiguration": "development",
       "options": {
-        "buildTarget": "maketing-apis:build"
+        "buildTarget": "maketing-apis:build --skip-nx-cache=true"
       },
       "configurations": {
         "development": {
-          "buildTarget": "maketing-apis:build:development"
+          "buildTarget": "maketing-apis:build:development --skip-nx-cache=true"
         },
         "production": {
           "buildTarget": "maketing-apis:build:production"

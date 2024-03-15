@@ -1,6 +1,6 @@
-import { FindOptionsOrderValue } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 import { Category, Product } from '@family-coffee/entities';
-import { AppDataSource } from '@family-coffee/config';
+import { FindOptionsOrderValue, Repository } from 'typeorm';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PaginationDto } from './dto/pagination.dto';
 import { CreateCategoryDto } from './dto/create-category.dto';
@@ -13,7 +13,10 @@ export interface CategoriesWithPageResponse {
 
 @Injectable()
 export class CategoryService {
-  private readonly categoryRepo = AppDataSource.getRepository(Category);
+  constructor(
+    @InjectRepository(Category)
+    private readonly categoryRepo: Repository<Category>
+  ) {}
 
   async getAllCategories(): Promise<Category[]> {
     try {
@@ -82,16 +85,12 @@ export class CategoryService {
     createCategoryDto: CreateCategoryDto
   ): Promise<Category> {
     try {
-      return await AppDataSource.transaction(async (t) => {
-        const repository = t.getRepository(Category);
+      const cate = new Category();
+      cate.name = createCategoryDto.name;
+      cate.parentId = createCategoryDto.parentId;
 
-        const cate = new Category();
-        cate.name = createCategoryDto.name;
-        cate.parentId = createCategoryDto.parentId;
-
-        const newCate = repository.create(cate);
-        return await repository.save(newCate);
-      });
+      const newCate = this.categoryRepo.create(cate);
+      return await this.categoryRepo.save(newCate);
     } catch (error) {
       throw new HttpException(
         (error as Error).message,
@@ -105,17 +104,13 @@ export class CategoryService {
     updateCategoryDto: UpdateCategoryDto
   ): Promise<Category> {
     try {
-      return await AppDataSource.transaction(async (t) => {
-        const repository = t.getRepository(Category);
+      const category = await this.getCategoryById(id);
+      if (!category) {
+        throw new HttpException('Category not found', HttpStatus.NOT_FOUND);
+      }
 
-        const category = await this.getCategoryById(id);
-        if (!category) {
-          throw new HttpException('Category not found', HttpStatus.NOT_FOUND);
-        }
-
-        const updatedItem = Object.assign(category, updateCategoryDto);
-        return await repository.save(updatedItem);
-      });
+      const updatedItem = Object.assign(category, updateCategoryDto);
+      return await this.categoryRepo.save(updatedItem);
     } catch (error) {
       throw new HttpException(
         (error as Error).message,
@@ -126,16 +121,12 @@ export class CategoryService {
 
   async deleteCategory(id: string): Promise<void> {
     try {
-      await AppDataSource.transaction(async (t) => {
-        const repository = t.getRepository(Category);
+      const category = await this.getCategoryById(id);
+      if (!category) {
+        throw new HttpException('Category not found', HttpStatus.NOT_FOUND);
+      }
 
-        const category = await this.getCategoryById(id);
-        if (!category) {
-          throw new HttpException('Category not found', HttpStatus.NOT_FOUND);
-        }
-
-        await repository.remove(category);
-      });
+      await this.categoryRepo.remove(category);
     } catch (error) {
       throw new HttpException(
         (error as Error).message,

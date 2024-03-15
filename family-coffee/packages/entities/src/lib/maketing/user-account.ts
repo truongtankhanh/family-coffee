@@ -40,4 +40,12 @@ export class UserAccount extends BaseEntity {
     comment: 'Số điện thoại của người dùng',
   })
   phoneNumber: string | undefined;
+
+  @Column('varchar', {
+    name: 'jwt_token',
+    length: 255,
+    nullable: true,
+    comment: 'Lưu trữ token JWT cho mỗi người dùng',
+  })
+  jwtToken: string;
 }

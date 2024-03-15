@@ -1,16 +1,19 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import * as crypto from 'crypto';
+import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
-import { AppDataSource } from '@family-coffee/config';
+import { InjectRepository } from '@nestjs/typeorm';
 import { AdminAccount } from '@family-coffee/entities';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { LoginAccountDto } from './dto/login-account.dto';
 import { CreateAccountDto } from './dto/create-account.dto';
 
 @Injectable()
 export class AuthService {
-  private readonly adminAccountRepo = AppDataSource.getRepository(AdminAccount);
-
-  constructor(private jwtService: JwtService) {}
+  constructor(
+    private jwtService: JwtService,
+    @InjectRepository(AdminAccount)
+    private readonly adminAccountRepo: Repository<AdminAccount>
+  ) {}
 
   async register(createAccountDto: CreateAccountDto): Promise<AdminAccount> {
     const hashedPassword = this.hashPassword(createAccountDto.password); // Mã hoá mật khẩu
