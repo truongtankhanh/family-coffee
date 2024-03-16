@@ -6,8 +6,12 @@ import { databaseOptions } from './database-options';
 config();
 
 export const typeormConfig: DataSourceOptions = {
-  type: 'postgres',
+  type: 'mysql',
   ...databaseOptions(process.env),
   entities: Object.values(Entities),
-  synchronize: true,
+  extra: {
+    charset: 'utf8mb4_unicode_ci',
+  },
+  synchronize: false,
+  logging: false,
 };

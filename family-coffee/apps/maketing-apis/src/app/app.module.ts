@@ -4,6 +4,7 @@ import { typeormConfig } from '@family-coffee/config';
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 
+import { AuthModule, BlogPostModule } from './modules';
 import { AppService } from './app.service';
 import { AppController } from './app.controller';
 import { HttpExceptionFilter } from './filters';
@@ -17,7 +18,8 @@ import { ResponseFormattingInterceptor } from './interceptors';
       signOptions: { expiresIn: '3h' },
     }),
     TypeOrmModule.forRoot(typeormConfig),
-    TypeOrmModule.forFeature([])
+    AuthModule,
+    BlogPostModule,
   ],
   controllers: [AppController],
   providers: [

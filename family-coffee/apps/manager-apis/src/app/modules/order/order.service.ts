@@ -72,7 +72,13 @@ export class OrderService {
 
   async getOrderById(id: string): Promise<Order> {
     try {
-      return await this.orderRepo.findOneOrFail({ where: { id } });
+      const order = await this.orderRepo.findOne({ where: { id } });
+
+      if (!order) {
+        throw new HttpException('Order not found', HttpStatus.NOT_FOUND);
+      }
+
+      return order;
     } catch (error) {
       throw new HttpException(
         (error as Error).message,
@@ -105,9 +111,6 @@ export class OrderService {
   ): Promise<Order> {
     try {
       const order = await this.getOrderById(id);
-      if (!order) {
-        throw new HttpException('Order not found', HttpStatus.NOT_FOUND);
-      }
 
       const updatedItem = Object.assign(order, updateOrderDto);
       return await this.orderRepo.save(updatedItem);
@@ -122,9 +125,6 @@ export class OrderService {
   async deleteOrder(id: string): Promise<void> {
     try {
       const order = await this.getOrderById(id);
-      if (!order) {
-        throw new HttpException('Order not found', HttpStatus.NOT_FOUND);
-      }
 
       await this.orderRepo.remove(order);
     } catch (error) {
