@@ -18,6 +18,10 @@
           "buildTarget": "maketing-apis:build:production"
         }
       }
+    },
+    "docker-build": {
+      "dependsOn": ["build"],
+      "command": "docker build -f apps/maketing-apis/Dockerfile . -t maketing-apis"
     }
   },
   "tags": []
