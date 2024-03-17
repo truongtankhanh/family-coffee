@@ -1,5 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Column, Entity } from 'typeorm';
+import { Column, Entity, OneToMany } from 'typeorm';
+import { Feedback } from './feedback';
 import { BaseEntity } from '../base-entity';
 
 @Entity('restaurant', { schema: 'family_coffee_db' })
@@ -35,4 +36,7 @@ export class Restaurant extends BaseEntity {
     comment: 'Giờ mở cửa và đóng cửa của quán',
   })
   workingHours: string | undefined;
+
+  @OneToMany(() => Feedback, (feedback) => feedback.restaurant)
+  feedback: Feedback[];
 }

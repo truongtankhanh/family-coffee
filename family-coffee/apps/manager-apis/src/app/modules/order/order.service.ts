@@ -1,7 +1,8 @@
+import { Injectable } from '@nestjs/common';
 import { Order } from '@family-coffee/entities';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsOrderValue, Repository } from 'typeorm';
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpExceptionService } from '@family-coffee/services';
 import { PaginationDto } from './dto/pagination.dto';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
@@ -15,17 +16,15 @@ export interface OrdersWithPageResponse {
 export class OrderService {
   constructor(
     @InjectRepository(Order)
-    private readonly orderRepo: Repository<Order>
+    private readonly orderRepo: Repository<Order>,
+    private readonly httpExceptionService: HttpExceptionService
   ) {}
 
   async getAllOrders(): Promise<Order[]> {
     try {
       return await this.orderRepo.find({ withDeleted: false });
     } catch (error) {
-      throw new HttpException(
-        (error as Error).message,
-        HttpStatus.TOO_MANY_REQUESTS
-      );
+      throw this.httpExceptionService.tooManyRequests((error as Error).message);
     }
   }
 
@@ -47,10 +46,7 @@ export class OrderService {
         data,
       };
     } catch (error) {
-      throw new HttpException(
-        (error as Error).message,
-        HttpStatus.TOO_MANY_REQUESTS
-      );
+      throw this.httpExceptionService.tooManyRequests((error as Error).message);
     }
   }
 
@@ -63,10 +59,7 @@ export class OrderService {
         withDeleted: false,
       });
     } catch (error) {
-      throw new HttpException(
-        (error as Error).message,
-        HttpStatus.TOO_MANY_REQUESTS
-      );
+      throw this.httpExceptionService.tooManyRequests((error as Error).message);
     }
   }
 
@@ -75,15 +68,14 @@ export class OrderService {
       const order = await this.orderRepo.findOne({ where: { id } });
 
       if (!order) {
-        throw new HttpException('Order not found', HttpStatus.NOT_FOUND);
+        throw this.httpExceptionService.notFoundRequests(
+          `Order ${id} not found`
+        );
       }
 
       return order;
     } catch (error) {
-      throw new HttpException(
-        (error as Error).message,
-        HttpStatus.TOO_MANY_REQUESTS
-      );
+      throw this.httpExceptionService.tooManyRequests((error as Error).message);
     }
   }
 
@@ -98,10 +90,7 @@ export class OrderService {
       const newOrder = this.orderRepo.create(order);
       return await this.orderRepo.save(newOrder);
     } catch (error) {
-      throw new HttpException(
-        (error as Error).message,
-        HttpStatus.TOO_MANY_REQUESTS
-      );
+      throw this.httpExceptionService.tooManyRequests((error as Error).message);
     }
   }
 
@@ -115,10 +104,7 @@ export class OrderService {
       const updatedItem = Object.assign(order, updateOrderDto);
       return await this.orderRepo.save(updatedItem);
     } catch (error) {
-      throw new HttpException(
-        (error as Error).message,
-        HttpStatus.TOO_MANY_REQUESTS
-      );
+      throw this.httpExceptionService.tooManyRequests((error as Error).message);
     }
   }
 
@@ -128,10 +114,7 @@ export class OrderService {
 
       await this.orderRepo.remove(order);
     } catch (error) {
-      throw new HttpException(
-        (error as Error).message,
-        HttpStatus.TOO_MANY_REQUESTS
-      );
+      throw this.httpExceptionService.tooManyRequests((error as Error).message);
     }
   }
 }

@@ -17,7 +17,8 @@
     "paths": {
       "@family-coffee/config": ["packages/config/src/index.ts"],
       "@family-coffee/entities": ["packages/entities/src/index.ts"],
-      "@family-coffee/enums": ["packages/enums/src/index.ts"]
+      "@family-coffee/enums": ["packages/enums/src/index.ts"],
+      "@family-coffee/services": ["packages/services/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

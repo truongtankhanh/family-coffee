@@ -4,7 +4,13 @@ import { typeormConfig } from '@family-coffee/config';
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 
-import { AuthModule, BlogPostModule, CommentModule } from './modules';
+import {
+  AuthModule,
+  BlogPostModule,
+  CommentModule,
+  FeedbackModule,
+  RestaurantModule,
+} from './modules';
 import { AppService } from './app.service';
 import { AppController } from './app.controller';
 import { HttpExceptionFilter } from './filters';
@@ -21,6 +27,8 @@ import { ResponseFormattingInterceptor } from './interceptors';
     AuthModule,
     BlogPostModule,
     CommentModule,
+    FeedbackModule,
+    RestaurantModule,
   ],
   controllers: [AppController],
   providers: [
