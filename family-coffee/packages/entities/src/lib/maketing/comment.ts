@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Column, Entity, ManyToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { BlogPost } from './blog-post';
 import { BaseEntity } from '../base-entity';
 
@@ -27,6 +27,10 @@ export class Comment extends BaseEntity {
   })
   commentedAt: Date | undefined;
 
+  @Column('varchar', { name: 'blog_id', length: 36 })
+  blogId: string;
+
   @ManyToOne(() => BlogPost, (blog) => blog.comments)
+  @JoinColumn([{ name: 'blog_id', referencedColumnName: 'id' }])
   blogPost: BlogPost | undefined;
 }

@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Column, Entity, ManyToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { Category } from './category';
 import { BaseEntity } from '../base-entity';
 
@@ -19,6 +19,10 @@ export class Product extends BaseEntity {
   @Column('float', { comment: 'Giá sản phẩm' })
   price: number | undefined;
 
+  @Column('varchar', { name: 'category_id', length: 36 })
+  categoryId: string;
+
   @ManyToOne(() => Category, (category) => category.products)
+  @JoinColumn([{ name: 'category_id', referencedColumnName: 'id' }])
   category: Category | undefined;
 }

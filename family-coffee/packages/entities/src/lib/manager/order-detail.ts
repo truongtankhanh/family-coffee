@@ -26,7 +26,11 @@ export class OrderDetail extends BaseEntity {
   })
   subtotal: number | undefined;
 
+  @Column('varchar', { name: 'order_id', length: 36 })
+  orderId: string;
+
   @ManyToOne(() => Order, (order) => order.orderDetails)
+  @JoinColumn([{ name: 'order_id', referencedColumnName: 'id' }])
   order: Order | undefined;
 
   @OneToOne(() => Product)

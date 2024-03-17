@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import {
   ORDER_STATUS,
   PAYMENT_STATUS,
@@ -40,9 +40,13 @@ export class Order extends BaseEntity {
   })
   totalAmount: number | undefined;
 
-  @OneToMany(() => OrderDetail, (orderDetail) => orderDetail.order)
-  orderDetails: Promise<OrderDetail[]> | undefined;
+  @Column('varchar', { name: 'customer_id', length: 36 })
+  customerId: string;
 
   @ManyToOne(() => Customer, (user) => user.orders)
+  @JoinColumn([{ name: 'customer_id', referencedColumnName: 'id' }])
   customer: Customer | undefined;
+
+  @OneToMany(() => OrderDetail, (orderDetail) => orderDetail.order)
+  orderDetails: Promise<OrderDetail[]> | undefined;
 }
