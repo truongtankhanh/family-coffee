@@ -1,13 +1,13 @@
+const { join } = require('path');
 const { NxWebpackPlugin } = require('@nx/webpack');
 const { NxReactWebpackPlugin } = require('@nx/react');
-const { join } = require('path');
 
 module.exports = {
   output: {
     path: join(__dirname, '../../dist/apps/maketing-client'),
   },
   devServer: {
-    port: 4200,
+    port: process.env.MAKETING_CLIENT_PORT || 4300,
   },
   plugins: [
     new NxWebpackPlugin({

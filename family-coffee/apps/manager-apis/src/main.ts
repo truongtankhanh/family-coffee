@@ -12,7 +12,7 @@ import {DocumentBuilder, SwaggerModule} from '@nestjs/swagger';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  const globalPrefix = process.env.GLOBAL_PREFIX;
+  const globalPrefix = process.env.GLOBAL_PREFIX_MANAGER;
   app.setGlobalPrefix(globalPrefix);
 
   const options = new DocumentBuilder()
