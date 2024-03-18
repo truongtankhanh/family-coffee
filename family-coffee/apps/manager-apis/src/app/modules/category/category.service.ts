@@ -1,7 +1,9 @@
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Category, Product } from '@family-coffee/entities';
 import { FindOptionsOrderValue, Repository } from 'typeorm';
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpExceptionService } from '@family-coffee/services';
+
 import { PaginationDto } from './dto/pagination.dto';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
@@ -15,17 +17,15 @@ export interface CategoriesWithPageResponse {
 export class CategoryService {
   constructor(
     @InjectRepository(Category)
-    private readonly categoryRepo: Repository<Category>
+    private readonly categoryRepo: Repository<Category>,
+    private readonly httpExceptionService: HttpExceptionService
   ) {}
 
   async getAllCategories(): Promise<Category[]> {
     try {
       return await this.categoryRepo.find({ withDeleted: false });
     } catch (error) {
-      throw new HttpException(
-        (error as Error).message,
-        HttpStatus.TOO_MANY_REQUESTS
-      );
+      throw this.httpExceptionService.tooManyRequests((error as Error).message);
     }
   }
 
@@ -47,10 +47,7 @@ export class CategoryService {
         data,
       };
     } catch (error) {
-      throw new HttpException(
-        (error as Error).message,
-        HttpStatus.TOO_MANY_REQUESTS
-      );
+      throw this.httpExceptionService.tooManyRequests((error as Error).message);
     }
   }
 
@@ -63,21 +60,23 @@ export class CategoryService {
         withDeleted: false,
       });
     } catch (error) {
-      throw new HttpException(
-        (error as Error).message,
-        HttpStatus.TOO_MANY_REQUESTS
-      );
+      throw this.httpExceptionService.tooManyRequests((error as Error).message);
     }
   }
 
   async getCategoryById(id: string): Promise<Category> {
     try {
-      return await this.categoryRepo.findOneOrFail({ where: { id } });
+      const category = await this.categoryRepo.findOne({ where: { id } });
+
+      if (!category) {
+        throw this.httpExceptionService.notFoundRequests(
+          `Category ${id} not found`
+        );
+      }
+
+      return category;
     } catch (error) {
-      throw new HttpException(
-        (error as Error).message,
-        HttpStatus.TOO_MANY_REQUESTS
-      );
+      throw this.httpExceptionService.tooManyRequests((error as Error).message);
     }
   }
 
@@ -92,10 +91,7 @@ export class CategoryService {
       const newCate = this.categoryRepo.create(cate);
       return await this.categoryRepo.save(newCate);
     } catch (error) {
-      throw new HttpException(
-        (error as Error).message,
-        HttpStatus.TOO_MANY_REQUESTS
-      );
+      throw this.httpExceptionService.tooManyRequests((error as Error).message);
     }
   }
 
@@ -105,51 +101,31 @@ export class CategoryService {
   ): Promise<Category> {
     try {
       const category = await this.getCategoryById(id);
-      if (!category) {
-        throw new HttpException('Category not found', HttpStatus.NOT_FOUND);
-      }
 
       const updatedItem = Object.assign(category, updateCategoryDto);
       return await this.categoryRepo.save(updatedItem);
     } catch (error) {
-      throw new HttpException(
-        (error as Error).message,
-        HttpStatus.TOO_MANY_REQUESTS
-      );
+      throw this.httpExceptionService.tooManyRequests((error as Error).message);
     }
   }
 
   async deleteCategory(id: string): Promise<void> {
     try {
       const category = await this.getCategoryById(id);
-      if (!category) {
-        throw new HttpException('Category not found', HttpStatus.NOT_FOUND);
-      }
 
       await this.categoryRepo.remove(category);
     } catch (error) {
-      throw new HttpException(
-        (error as Error).message,
-        HttpStatus.TOO_MANY_REQUESTS
-      );
+      throw this.httpExceptionService.tooManyRequests((error as Error).message);
     }
   }
 
   async getProductByCategoryId(categoryId: string): Promise<Product[]> {
     try {
-      const category = await this.categoryRepo.findOne({
-        where: { id: categoryId },
-      });
-      if (!category) {
-        throw new HttpException('Category not found', HttpStatus.NOT_FOUND);
-      }
+      const category = await this.getCategoryById(categoryId);
 
       return await category.products;
     } catch (error) {
-      throw new HttpException(
-        (error as Error).message,
-        HttpStatus.TOO_MANY_REQUESTS
-      );
+      throw this.httpExceptionService.tooManyRequests((error as Error).message);
     }
   }
 }

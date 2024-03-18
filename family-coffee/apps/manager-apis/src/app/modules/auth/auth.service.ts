@@ -1,9 +1,10 @@
 import * as crypto from 'crypto';
 import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AdminAccount } from '@family-coffee/entities';
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpExceptionService } from '@family-coffee/services';
 import { LoginAccountDto } from './dto/login-account.dto';
 import { CreateAccountDto } from './dto/create-account.dto';
 
@@ -12,7 +13,8 @@ export class AuthService {
   constructor(
     private jwtService: JwtService,
     @InjectRepository(AdminAccount)
-    private readonly adminAccountRepo: Repository<AdminAccount>
+    private readonly adminAccountRepo: Repository<AdminAccount>,
+    private readonly httpExceptionService: HttpExceptionService
   ) {}
 
   async register(createAccountDto: CreateAccountDto): Promise<AdminAccount> {
@@ -34,10 +36,7 @@ export class AuthService {
 
       return await this.adminAccountRepo.save(account);
     } catch (error) {
-      throw new HttpException(
-        (error as Error).message,
-        HttpStatus.TOO_MANY_REQUESTS
-      );
+      throw this.httpExceptionService.tooManyRequests((error as Error).message);
     }
   }
 
@@ -50,10 +49,7 @@ export class AuthService {
       });
 
       if (!admin || admin.password !== password) {
-        throw new HttpException(
-          'Invalid phone number or password',
-          HttpStatus.UNAUTHORIZED
-        );
+        throw this.httpExceptionService.unAuthorizedRequests('Invalid phone number or password')
       }
 
       const isValidPassword = admin.password === this.hashPassword(password); // So sánh mật khẩu đã mã hoá
@@ -72,10 +68,7 @@ export class AuthService {
 
       return admin;
     } catch (error) {
-      throw new HttpException(
-        (error as Error).message,
-        HttpStatus.TOO_MANY_REQUESTS
-      );
+      throw this.httpExceptionService.tooManyRequests((error as Error).message);
     }
   }
 

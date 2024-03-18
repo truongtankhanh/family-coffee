@@ -1,7 +1,9 @@
 import { Repository } from 'typeorm';
 import { Comment } from '@family-coffee/entities';
 import { InjectRepository } from '@nestjs/typeorm';
+import { HttpExceptionService } from '@family-coffee/services';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+
 import { PaginationDto } from './dto/pagination.dto';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
@@ -15,17 +17,15 @@ export interface CommentsWithPageResponse {
 export class CommentService {
   constructor(
     @InjectRepository(Comment)
-    private readonly commentRepo: Repository<Comment>
+    private readonly commentRepo: Repository<Comment>,
+    private readonly httpExceptionService: HttpExceptionService
   ) {}
 
   async getAllComment(): Promise<Comment[]> {
     try {
       return await this.commentRepo.find({ withDeleted: false });
     } catch (error) {
-      throw new HttpException(
-        (error as Error).message,
-        HttpStatus.TOO_MANY_REQUESTS
-      );
+      throw this.httpExceptionService.tooManyRequests((error as Error).message);
     }
   }
 
@@ -47,10 +47,7 @@ export class CommentService {
         data,
       };
     } catch (error) {
-      throw new HttpException(
-        (error as Error).message,
-        HttpStatus.TOO_MANY_REQUESTS
-      );
+      throw this.httpExceptionService.tooManyRequests((error as Error).message);
     }
   }
 
@@ -59,15 +56,12 @@ export class CommentService {
       const comment = await this.commentRepo.findOne({ where: { id } });
 
       if (!comment) {
-        throw new HttpException('Comment not found', HttpStatus.NOT_FOUND);
+        throw new HttpException(`Comment ${id} not found`, HttpStatus.NOT_FOUND);
       }
 
       return comment;
     } catch (error) {
-      throw new HttpException(
-        (error as Error).message,
-        HttpStatus.TOO_MANY_REQUESTS
-      );
+      throw this.httpExceptionService.tooManyRequests((error as Error).message);
     }
   }
 
@@ -82,10 +76,7 @@ export class CommentService {
       const newOrder = this.commentRepo.create(comment);
       return await this.commentRepo.save(newOrder);
     } catch (error) {
-      throw new HttpException(
-        (error as Error).message,
-        HttpStatus.TOO_MANY_REQUESTS
-      );
+      throw this.httpExceptionService.tooManyRequests((error as Error).message);
     }
   }
 
@@ -99,10 +90,7 @@ export class CommentService {
       const updatedItem = Object.assign(comment, updateCommentDto);
       return await this.commentRepo.save(updatedItem);
     } catch (error) {
-      throw new HttpException(
-        (error as Error).message,
-        HttpStatus.TOO_MANY_REQUESTS
-      );
+      throw this.httpExceptionService.tooManyRequests((error as Error).message);
     }
   }
 
@@ -112,10 +100,7 @@ export class CommentService {
 
       await this.commentRepo.remove(comment);
     } catch (error) {
-      throw new HttpException(
-        (error as Error).message,
-        HttpStatus.TOO_MANY_REQUESTS
-      );
+      throw this.httpExceptionService.tooManyRequests((error as Error).message);
     }
   }
 }

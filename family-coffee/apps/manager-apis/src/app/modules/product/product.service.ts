@@ -1,7 +1,9 @@
+import { Injectable } from '@nestjs/common';
 import { Product } from '@family-coffee/entities';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsOrderValue, Repository } from 'typeorm';
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpExceptionService } from '@family-coffee/services';
+
 import { PaginationDto } from './dto/pagination.dto';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -15,17 +17,15 @@ export interface ProductsWithPageResponse {
 export class ProductService {
   constructor(
     @InjectRepository(Product)
-    private readonly productRepo: Repository<Product>
+    private readonly productRepo: Repository<Product>,
+    private readonly httpExceptionService: HttpExceptionService
   ) {}
 
   async getAllProducts(): Promise<Product[]> {
     try {
       return await this.productRepo.find({ withDeleted: false });
     } catch (error) {
-      throw new HttpException(
-        (error as Error).message,
-        HttpStatus.TOO_MANY_REQUESTS
-      );
+      throw this.httpExceptionService.tooManyRequests((error as Error).message);
     }
   }
 
@@ -47,10 +47,7 @@ export class ProductService {
         data,
       };
     } catch (error) {
-      throw new HttpException(
-        (error as Error).message,
-        HttpStatus.TOO_MANY_REQUESTS
-      );
+      throw this.httpExceptionService.tooManyRequests((error as Error).message);
     }
   }
 
@@ -63,21 +60,23 @@ export class ProductService {
         withDeleted: false,
       });
     } catch (error) {
-      throw new HttpException(
-        (error as Error).message,
-        HttpStatus.TOO_MANY_REQUESTS
-      );
+      throw this.httpExceptionService.tooManyRequests((error as Error).message);
     }
   }
 
   async getProductById(id: string): Promise<Product> {
     try {
-      return await this.productRepo.findOneOrFail({ where: { id } });
+      const product = await this.productRepo.findOne({ where: { id } });
+
+      if (!product) {
+        throw this.httpExceptionService.notFoundRequests(
+          `Product ${id} not found`
+        );
+      }
+
+      return product;
     } catch (error) {
-      throw new HttpException(
-        (error as Error).message,
-        HttpStatus.TOO_MANY_REQUESTS
-      );
+      throw this.httpExceptionService.tooManyRequests((error as Error).message);
     }
   }
 
@@ -91,10 +90,7 @@ export class ProductService {
       const newProduct = this.productRepo.create(product);
       return await this.productRepo.save(newProduct);
     } catch (error) {
-      throw new HttpException(
-        (error as Error).message,
-        HttpStatus.TOO_MANY_REQUESTS
-      );
+      throw this.httpExceptionService.tooManyRequests((error as Error).message);
     }
   }
 
@@ -104,33 +100,21 @@ export class ProductService {
   ): Promise<Product> {
     try {
       const product = await this.getProductById(id);
-      if (!product) {
-        throw new HttpException('Product not found', HttpStatus.NOT_FOUND);
-      }
 
       const updatedItem = Object.assign(product, updateProductDto);
       return await this.productRepo.save(updatedItem);
     } catch (error) {
-      throw new HttpException(
-        (error as Error).message,
-        HttpStatus.TOO_MANY_REQUESTS
-      );
+      throw this.httpExceptionService.tooManyRequests((error as Error).message);
     }
   }
 
   async deleteProduct(id: string): Promise<void> {
     try {
       const product = await this.getProductById(id);
-      if (!product) {
-        throw new HttpException('Product not found', HttpStatus.NOT_FOUND);
-      }
 
       await this.productRepo.remove(product);
     } catch (error) {
-      throw new HttpException(
-        (error as Error).message,
-        HttpStatus.TOO_MANY_REQUESTS
-      );
+      throw this.httpExceptionService.tooManyRequests((error as Error).message);
     }
   }
 }

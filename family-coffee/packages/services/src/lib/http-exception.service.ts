@@ -9,4 +9,8 @@ export class HttpExceptionService {
   notFoundRequests(message: string): HttpException {
     return new HttpException(message, HttpStatus.NOT_FOUND);
   }
+
+  unAuthorizedRequests(message: string): HttpException {
+    return new HttpException(message, HttpStatus.UNAUTHORIZED);
+  }
 }

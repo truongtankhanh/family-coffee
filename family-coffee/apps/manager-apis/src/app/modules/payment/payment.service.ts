@@ -1,7 +1,9 @@
+import { Injectable } from '@nestjs/common';
 import { Payment } from '@family-coffee/entities';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsOrderValue, Repository } from 'typeorm';
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpExceptionService } from '@family-coffee/services';
+
 import { PaginationDto } from './dto/pagination.dto';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
@@ -15,17 +17,15 @@ export interface PaymentsWithPageResponse {
 export class PaymentService {
   constructor(
     @InjectRepository(Payment)
-    private readonly paymentRepo: Repository<Payment>
+    private readonly paymentRepo: Repository<Payment>,
+    private readonly httpExceptionService: HttpExceptionService
   ) {}
 
   async getAllPayments(): Promise<Payment[]> {
     try {
       return await this.paymentRepo.find({ withDeleted: false });
     } catch (error) {
-      throw new HttpException(
-        (error as Error).message,
-        HttpStatus.TOO_MANY_REQUESTS
-      );
+      throw this.httpExceptionService.tooManyRequests((error as Error).message);
     }
   }
 
@@ -47,10 +47,7 @@ export class PaymentService {
         data,
       };
     } catch (error) {
-      throw new HttpException(
-        (error as Error).message,
-        HttpStatus.TOO_MANY_REQUESTS
-      );
+      throw this.httpExceptionService.tooManyRequests((error as Error).message);
     }
   }
 
@@ -63,21 +60,23 @@ export class PaymentService {
         withDeleted: false,
       });
     } catch (error) {
-      throw new HttpException(
-        (error as Error).message,
-        HttpStatus.TOO_MANY_REQUESTS
-      );
+      throw this.httpExceptionService.tooManyRequests((error as Error).message);
     }
   }
 
   async getPaymentById(id: string): Promise<Payment> {
     try {
-      return await this.paymentRepo.findOneOrFail({ where: { id } });
+      const payment = await this.paymentRepo.findOne({ where: { id } });
+
+      if (!payment) {
+        throw this.httpExceptionService.notFoundRequests(
+          `Payment ${id} not found`
+        );
+      }
+
+      return payment;
     } catch (error) {
-      throw new HttpException(
-        (error as Error).message,
-        HttpStatus.TOO_MANY_REQUESTS
-      );
+      throw this.httpExceptionService.tooManyRequests((error as Error).message);
     }
   }
 
@@ -93,10 +92,7 @@ export class PaymentService {
       const newPayment = this.paymentRepo.create(payment);
       return await this.paymentRepo.save(newPayment);
     } catch (error) {
-      throw new HttpException(
-        (error as Error).message,
-        HttpStatus.TOO_MANY_REQUESTS
-      );
+      throw this.httpExceptionService.tooManyRequests((error as Error).message);
     }
   }
 
@@ -106,33 +102,21 @@ export class PaymentService {
   ): Promise<Payment> {
     try {
       const payment = await this.getPaymentById(id);
-      if (!payment) {
-        throw new HttpException('Payment not found', HttpStatus.NOT_FOUND);
-      }
 
       const updatedItem = Object.assign(payment, updatePaymentDto);
       return await this.paymentRepo.save(updatedItem);
     } catch (error) {
-      throw new HttpException(
-        (error as Error).message,
-        HttpStatus.TOO_MANY_REQUESTS
-      );
+      throw this.httpExceptionService.tooManyRequests((error as Error).message);
     }
   }
 
   async deletePayment(id: string): Promise<void> {
     try {
       const payment = await this.getPaymentById(id);
-      if (!payment) {
-        throw new HttpException('Payment not found', HttpStatus.NOT_FOUND);
-      }
 
       await this.paymentRepo.remove(payment);
     } catch (error) {
-      throw new HttpException(
-        (error as Error).message,
-        HttpStatus.TOO_MANY_REQUESTS
-      );
+      throw this.httpExceptionService.tooManyRequests((error as Error).message);
     }
   }
 }

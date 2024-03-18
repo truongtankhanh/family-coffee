@@ -1,9 +1,11 @@
 import * as crypto from 'crypto';
 import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { HttpExceptionService } from '@family-coffee/services';
 import { AdminAccount, UserAccount } from '@family-coffee/entities';
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+
 import { LoginAccountDto } from './dto/login-account.dto';
 import { CreateAccountDto } from './dto/create-account.dto';
 
@@ -12,7 +14,8 @@ export class AuthService {
   constructor(
     private jwtService: JwtService,
     @InjectRepository(UserAccount)
-    private readonly userAccountRepo: Repository<UserAccount>
+    private readonly userAccountRepo: Repository<UserAccount>,
+    private readonly httpExceptionService: HttpExceptionService
   ) {}
 
   async register(createUserDto: CreateAccountDto): Promise<UserAccount> {
@@ -34,10 +37,7 @@ export class AuthService {
 
       return await this.userAccountRepo.save(user);
     } catch (error) {
-      throw new HttpException(
-        (error as Error).message,
-        HttpStatus.TOO_MANY_REQUESTS
-      );
+      throw this.httpExceptionService.tooManyRequests((error as Error).message);
     }
   }
 
@@ -50,9 +50,8 @@ export class AuthService {
       });
 
       if (!user || user.password !== password) {
-        throw new HttpException(
-          'Invalid phone number or password',
-          HttpStatus.UNAUTHORIZED
+        throw this.httpExceptionService.unAuthorizedRequests(
+          'Invalid phone number or password'
         );
       }
 
@@ -72,10 +71,7 @@ export class AuthService {
 
       return user;
     } catch (error) {
-      throw new HttpException(
-        (error as Error).message,
-        HttpStatus.TOO_MANY_REQUESTS
-      );
+      throw this.httpExceptionService.tooManyRequests((error as Error).message);
     }
   }
 

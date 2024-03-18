@@ -1,7 +1,9 @@
-import { FindOptionsOrderValue, Repository } from 'typeorm';
+import { Injectable } from '@nestjs/common';
 import { BlogPost } from '@family-coffee/entities';
 import { InjectRepository } from '@nestjs/typeorm';
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { FindOptionsOrderValue, Repository } from 'typeorm';
+import { HttpExceptionService } from '@family-coffee/services';
+
 import { PaginationDto } from './dto/pagination.dto';
 import { CreateBlogDto } from './dto/create-blog.dto';
 import { UpdateBlogDto } from './dto/update-blog.dto';
@@ -15,17 +17,15 @@ export interface BlogsWithPageResponse {
 export class BlogPostService {
   constructor(
     @InjectRepository(BlogPost)
-    private readonly blogRepo: Repository<BlogPost>
+    private readonly blogRepo: Repository<BlogPost>,
+    private readonly httpExceptionService: HttpExceptionService
   ) {}
 
   async getAllBlog(): Promise<BlogPost[]> {
     try {
       return await this.blogRepo.find({ withDeleted: false });
     } catch (error) {
-      throw new HttpException(
-        (error as Error).message,
-        HttpStatus.TOO_MANY_REQUESTS
-      );
+      throw this.httpExceptionService.tooManyRequests((error as Error).message);
     }
   }
 
@@ -47,10 +47,7 @@ export class BlogPostService {
         data,
       };
     } catch (error) {
-      throw new HttpException(
-        (error as Error).message,
-        HttpStatus.TOO_MANY_REQUESTS
-      );
+      throw this.httpExceptionService.tooManyRequests((error as Error).message);
     }
   }
 
@@ -63,10 +60,7 @@ export class BlogPostService {
         withDeleted: false,
       });
     } catch (error) {
-      throw new HttpException(
-        (error as Error).message,
-        HttpStatus.TOO_MANY_REQUESTS
-      );
+      throw this.httpExceptionService.tooManyRequests((error as Error).message);
     }
   }
 
@@ -75,15 +69,14 @@ export class BlogPostService {
       const blog = await this.blogRepo.findOne({ where: { id } });
 
       if (!blog) {
-        throw new HttpException('Blog not found', HttpStatus.NOT_FOUND);
+        throw this.httpExceptionService.notFoundRequests(
+          `Blog ${id} not found`
+        );
       }
 
       return blog;
     } catch (error) {
-      throw new HttpException(
-        (error as Error).message,
-        HttpStatus.TOO_MANY_REQUESTS
-      );
+      throw this.httpExceptionService.tooManyRequests((error as Error).message);
     }
   }
 
@@ -99,10 +92,7 @@ export class BlogPostService {
       const newBlog = this.blogRepo.create(blog);
       return await this.blogRepo.save(newBlog);
     } catch (error) {
-      throw new HttpException(
-        (error as Error).message,
-        HttpStatus.TOO_MANY_REQUESTS
-      );
+      throw this.httpExceptionService.tooManyRequests((error as Error).message);
     }
   }
 
@@ -116,10 +106,7 @@ export class BlogPostService {
       const updatedItem = Object.assign(blog, updateBlogDto);
       return await this.blogRepo.save(updatedItem);
     } catch (error) {
-      throw new HttpException(
-        (error as Error).message,
-        HttpStatus.TOO_MANY_REQUESTS
-      );
+      throw this.httpExceptionService.tooManyRequests((error as Error).message);
     }
   }
 
@@ -129,10 +116,7 @@ export class BlogPostService {
 
       await this.blogRepo.remove(blog);
     } catch (error) {
-      throw new HttpException(
-        (error as Error).message,
-        HttpStatus.TOO_MANY_REQUESTS
-      );
+      throw this.httpExceptionService.tooManyRequests((error as Error).message);
     }
   }
 }

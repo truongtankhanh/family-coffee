@@ -1,7 +1,9 @@
+import { Injectable } from '@nestjs/common';
 import { Customer } from '@family-coffee/entities';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsOrderValue, Repository } from 'typeorm';
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpExceptionService } from '@family-coffee/services';
+
 import { PaginationDto } from './dto/pagination.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
 import { CreateCustomerDto } from './dto/create-customer.dto';
@@ -15,17 +17,15 @@ export interface CustomersWithPageResponse {
 export class CustomerService {
   constructor(
     @InjectRepository(Customer)
-    private readonly customerRepo: Repository<Customer>
+    private readonly customerRepo: Repository<Customer>,
+    private readonly httpExceptionService: HttpExceptionService
   ) {}
 
   async getAllCustomers(): Promise<Customer[]> {
     try {
       return await this.customerRepo.find({ withDeleted: false });
     } catch (error) {
-      throw new HttpException(
-        (error as Error).message,
-        HttpStatus.TOO_MANY_REQUESTS
-      );
+      throw this.httpExceptionService.tooManyRequests((error as Error).message);
     }
   }
 
@@ -47,10 +47,7 @@ export class CustomerService {
         data,
       };
     } catch (error) {
-      throw new HttpException(
-        (error as Error).message,
-        HttpStatus.TOO_MANY_REQUESTS
-      );
+      throw this.httpExceptionService.tooManyRequests((error as Error).message);
     }
   }
 
@@ -63,21 +60,23 @@ export class CustomerService {
         withDeleted: false,
       });
     } catch (error) {
-      throw new HttpException(
-        (error as Error).message,
-        HttpStatus.TOO_MANY_REQUESTS
-      );
+      throw this.httpExceptionService.tooManyRequests((error as Error).message);
     }
   }
 
   async getCustomerById(id: string): Promise<Customer> {
     try {
-      return await this.customerRepo.findOneOrFail({ where: { id } });
+      const customer = await this.customerRepo.findOne({ where: { id } });
+
+      if (!customer) {
+        throw this.httpExceptionService.notFoundRequests(
+          `Customer ${id} not found`
+        );
+      }
+
+      return customer;
     } catch (error) {
-      throw new HttpException(
-        (error as Error).message,
-        HttpStatus.TOO_MANY_REQUESTS
-      );
+      throw this.httpExceptionService.tooManyRequests((error as Error).message);
     }
   }
 
@@ -92,10 +91,7 @@ export class CustomerService {
       const newCustomer = this.customerRepo.create(customer);
       return await this.customerRepo.save(newCustomer);
     } catch (error) {
-      throw new HttpException(
-        (error as Error).message,
-        HttpStatus.TOO_MANY_REQUESTS
-      );
+      throw this.httpExceptionService.tooManyRequests((error as Error).message);
     }
   }
 
@@ -105,33 +101,21 @@ export class CustomerService {
   ): Promise<Customer> {
     try {
       const customer = await this.getCustomerById(id);
-      if (!customer) {
-        throw new HttpException('Customer not found', HttpStatus.NOT_FOUND);
-      }
 
       const updatedItem = Object.assign(customer, updateCustomerDto);
       return await this.customerRepo.save(updatedItem);
     } catch (error) {
-      throw new HttpException(
-        (error as Error).message,
-        HttpStatus.TOO_MANY_REQUESTS
-      );
+      throw this.httpExceptionService.tooManyRequests((error as Error).message);
     }
   }
 
   async deleteCustomer(id: string): Promise<void> {
     try {
       const customer = await this.getCustomerById(id);
-      if (!customer) {
-        throw new HttpException('Customer not found', HttpStatus.NOT_FOUND);
-      }
 
       await this.customerRepo.remove(customer);
     } catch (error) {
-      throw new HttpException(
-        (error as Error).message,
-        HttpStatus.TOO_MANY_REQUESTS
-      );
+      throw this.httpExceptionService.tooManyRequests((error as Error).message);
     }
   }
 }
