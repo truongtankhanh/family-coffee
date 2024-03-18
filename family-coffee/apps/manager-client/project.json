@@ -1,0 +1,8 @@
+{
+  "name": "manager-client",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/manager-client/src",
+  "projectType": "application",
+  "targets": {},
+  "tags": []
+}
