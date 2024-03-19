@@ -14,8 +14,8 @@ import {
 import { AppService } from './app.service';
 import { AppController } from './app.controller';
 import { HttpExceptionFilter } from './filters';
-import { LoggingMiddleware } from './middleware';
 import { ResponseFormattingInterceptor } from './interceptors';
+import { AuthMiddleware, LoggingMiddleware } from './middleware';
 
 @Module({
   imports: [
@@ -46,6 +46,6 @@ import { ResponseFormattingInterceptor } from './interceptors';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(LoggingMiddleware).forRoutes('*');
+    consumer.apply(LoggingMiddleware, AuthMiddleware).forRoutes('*');
   }
 }

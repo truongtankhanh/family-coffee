@@ -3,14 +3,6 @@ import { JwtModule, JwtService } from '@nestjs/jwt';
 import { typeormConfig } from '@family-coffee/config';
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import {
-  AdminAccount,
-  Category,
-  Customer,
-  Order,
-  Payment,
-  Product,
-} from '@family-coffee/entities';
 
 import {
   AuthModule,
@@ -33,14 +25,6 @@ import { AuthMiddleware, LoggingMiddleware } from './middleware';
       signOptions: { expiresIn: '3h' },
     }),
     TypeOrmModule.forRoot(typeormConfig),
-    TypeOrmModule.forFeature([
-      AdminAccount,
-      Category,
-      Product,
-      Order,
-      Customer,
-      Payment,
-    ]),
     AuthModule,
     CategoryModule,
     ProductModule,
