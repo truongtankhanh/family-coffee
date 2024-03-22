@@ -1,8 +1,71 @@
 {
   "name": "manager-client",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "apps/manager-client/src",
   "projectType": "application",
-  "targets": {},
-  "tags": []
+  "prefix": "app",
+  "sourceRoot": "apps/manager-client/src",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@angular-devkit/build-angular:browser",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/apps/manager-client",
+        "index": "apps/manager-client/src/index.html",
+        "main": "apps/manager-client/src/main.ts",
+        "polyfills": ["zone.js"],
+        "tsConfig": "apps/manager-client/tsconfig.app.json",
+        "assets": [
+          "apps/manager-client/src/favicon.ico",
+          "apps/manager-client/src/assets"
+        ],
+        "styles": ["apps/manager-client/src/styles.css"],
+        "scripts": []
+      },
+      "configurations": {
+        "production": {
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "500kb",
+              "maximumError": "1mb"
+            },
+            {
+              "type": "anyComponentStyle",
+              "maximumWarning": "2kb",
+              "maximumError": "4kb"
+            }
+          ],
+          "outputHashing": "all"
+        },
+        "development": {
+          "buildOptimizer": false,
+          "optimization": false,
+          "vendorChunk": true,
+          "extractLicenses": false,
+          "sourceMap": true,
+          "namedChunks": true
+        }
+      },
+      "defaultConfiguration": "production"
+    },
+    "serve": {
+      "executor": "@angular-devkit/build-angular:dev-server",
+      "configurations": {
+        "production": {
+          "buildTarget": "manager-client:build:production"
+        },
+        "development": {
+          "buildTarget": "manager-client:build:development"
+        }
+      },
+      "defaultConfiguration": "development"
+    },
+    "extract-i18n": {
+      "executor": "@angular-devkit/build-angular:extract-i18n",
+      "options": {
+        "buildTarget": "manager-client:build"
+      }
+    }
+  }
 }
